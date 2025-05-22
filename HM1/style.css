@@ -1,0 +1,186 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.row .group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.group {
+    margin-bottom: 20px;
+}
+
+
+/* Input */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    color: #555;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    font-size: 14px;
+    color: #555;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+    margin-top: 15px;
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+}
+
+.checkbox-group label {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.checkbox-group .terms-text {
+    margin-left: 5px;
+    line-height: 1.5;
+    font-size: 13px;
+    color: #666;
+}
+
+.terms-text .highlight {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.terms-text a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.terms-text a:hover {
+    text-decoration: underline;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    color: white;
+}
+
+.btn-register {
+    background-color: #4a90e2;
+}
+
+.btn-register:hover {
+    background-color: #357ebd;
+}
+
+.btn-signin {
+    background-color: #5cb85c;
+}
+
+.btn-signin:hover {
+    background-color: #4cae4c;
+}
+
+/* To make responsive */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 0;
+    }
+
+    .row .group {
+        margin-bottom: 15px;
+    }
+
+    .row .group:last-child {
+        margin-bottom: 15px;
+    }
+
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .checkbox-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .checkbox-group .terms-text {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
