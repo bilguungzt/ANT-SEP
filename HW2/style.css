@@ -1,0 +1,71 @@
+body {
+    /* Font */
+    font-family: sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    /* Layout */
+    margin: 0; /* Remove default margin */
+    display: flex; /* Enable flex layout */
+    flex-direction: column; /* Stacks direct children vertically */
+    min-height: 100vh; /* Full viewport height (for sticky footer) */
+    text-align: center; /* Center text */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+header,
+nav,
+main,
+aside,
+footer {
+    padding: 12px;
+}
+
+header {
+    background-color: tomato;
+    height: 60px;
+}
+
+body>div {
+    display: flex;
+    flex: 1; /* Grow to fill available vertical space (for sticky footer) */
+}
+
+nav {
+    background-color: coral;
+    width: 100px;
+    min-width: 100px;
+}
+
+main {
+    background-color: moccasin;
+    flex-grow: 1; /* Fill remaining horizontal space */
+}
+
+aside {
+    background-color: sandybrown;
+    width: 100px;
+    min-width: 100px;
+}
+
+footer {
+    background-color: slategray;
+    height: 100px;
+}
+
+@media (max-width: 600px) {
+    body>div {
+        flex-direction: column;
+    }
+
+    nav,
+    aside {
+        width: 100%;
+    }
+
+    main {
+        width: 100%;
+    }
+}

@@ -1,0 +1,151 @@
+body {
+    font-family: sans-serif;
+    background-color: #f0f2f5;
+    padding: 20px;
+    display: flex;
+    /* Enables flexbox for centering */
+    justify-content: center;
+    /* Centers the tweet horizontally on the page */
+    align-items: flex-start;
+    /* Aligns tweet to the top */
+    min-height: 100vh;
+    /* Ensures background covers the full viewport height */
+    margin: 0;
+    /* Removes default body margin */
+    box-sizing: border-box;
+    /* Includes padding and border in element's total width and height */
+}
+
+/* Styles for the main tweet container */
+.tweet {
+    display: flex;
+    /* Lays out items in a row */
+    background-color: #fff;
+    border: 1px solid #cfd9de;
+    border-radius: 16px;
+    /* Rounded corners */
+    padding: 12px;
+    /* Space inside the tweet */
+    max-width: 598px;
+    /* Max width for the tweet */
+    box-sizing: border-box;
+    /* Border and padding included in width/height */
+    width: 100%;
+    /* Full width up to max-width */
+}
+
+/* Styles for the user's avatar/thumbnail */
+.thumbnail {
+    border-radius: 50%;
+    /* Makes it a circle  */
+    margin-right: 12px;
+    /* Space to the right of thumbnail */
+    flex-shrink: 0;
+    /* Stops thumbnail from shrinking */
+}
+
+/* Container for the tweet's text content and actions */
+.tweet-body {
+    display: flex;
+    /* Use flex layout */
+    flex-direction: column;
+    /* Lays out items in a column */
+    flex-grow: 1;
+    /* Takes up remaining space */
+    min-width: 0;
+}
+
+/* Header section of the tweet, containing name and metadata */
+.tweet-header {
+    display: flex;
+    /* Use flex layout */
+    align-items: baseline;
+    /* Aligns text at the bottom */
+    margin-bottom: 2px;
+    /* Space below header */
+}
+
+/* Styles for the user's name */
+.name {
+    color: #000;
+    /* Name text color  */
+    font-family: sans-serif;
+    /* Name font  */
+    font-size: 15px;
+    /* Name text size  */
+    font-weight: bold;
+    /* Makes name text bold  */
+    margin-right: 4px;
+}
+
+/* Styles for the tweet metadata (handle, timestamp) */
+.metadata {
+    color: #71767b;
+    /* Metadata text color */
+    font-family: sans-serif;
+    /* Metadata font  */
+    font-size: 15px;
+    /* Metadata text size  */
+
+}
+
+/* Styles for the main message/content of the tweet */
+.message {
+    color: #0f1419;
+    /* Message text color  */
+    font-family: sans-serif;
+    /* Message font */
+    font-size: 15px;
+    /* Message text size  */
+    line-height: 1.35;
+    /* Space between lines of text */
+    margin-bottom: 12px;
+    /* Space below message */
+
+}
+
+/* Container for the action icons and counts */
+.actions-row {
+    display: flex;
+    /* Use flex layout */
+    justify-content: space-between;
+    /* Spaces items out evenly  */
+    align-items: center;
+    /* Centers items vertically */
+    max-width: 425px;
+    /* Max width for actions  */
+    width: 100%;
+    /* Full width up to max-width */
+}
+
+/* Styles for individual action items  */
+.action-item {
+    display: flex;
+    /* Use flex layout */
+    align-items: center;
+    /* Centers icon and count vertically  */
+    color: #536471;
+    /* Text color for count  */
+
+}
+
+/* Styles for the SVG icons within action items */
+.icon {
+    fill: #536471;
+    /* Icon color */
+}
+
+.icon-with-text {
+    margin-right: 12px;
+    /* Space between icon and count */
+}
+
+/* Styles for the action counts  */
+.action-count {
+    color: #536471;
+    /* Count text color */
+    font-size: 13px;
+    /* Count text size  */
+    line-height: 1;
+    /* Helps align with icon */
+}
