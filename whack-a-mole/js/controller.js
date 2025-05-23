@@ -9,28 +9,30 @@ const GameController = ((assetLoader, model, view) => {
   let gameIsRunning = false;
 
   const handleBlockClick = (blockId) => {
-    console.log(
-      `GameController: handleBlockClick() - Block ID: ${blockId} clicked. Game running: ${gameIsRunning}, Time left: ${gameStateInstance.timeLeft}`
-    );
     if (!gameIsRunning || gameStateInstance.timeLeft <= 0) {
       return;
     }
 
     const clickedBlockState = gameStateInstance.getBlockState(blockId);
     if (clickedBlockState && clickedBlockState.hasMole) {
-      console.log(`GameController: Mole found at block ${blockId}!`);
+      console.log(`Mole found at block ${blockId}!`);
       gameStateInstance.incrementScore();
 
-      if (clickedBlockState.hideTimeoutId) {
-        clearTimeout(clickedBlockState.hideTimeoutId);
-      }
+      gameStateInstance.setBlockMoleState(blockId, false);
+
+      gameStateInstance.removeActiveMole();
 
       view.updateScore(gameStateInstance.score);
       view.hideMole(clickedBlockState);
-    } else {
       console.log(
-        `GameController: No mole or invalid block state at block ${blockId}.`
+        `Mole whacked at block ${blockId}. Current Score: ${
+          gameStateInstance.score
+        }. Model thinks block ${blockId} 'hasMole': ${
+          gameStateInstance.getBlockState(blockId).hasMole
+        }`
       );
+    } else {
+      console.log(`No mole or invalid block state at block ${blockId}.`);
     }
   };
 
@@ -54,31 +56,26 @@ const GameController = ((assetLoader, model, view) => {
     const randomIndex = Math.floor(Math.random() * emptyBlocks.length);
     const blockToSpawnIn = emptyBlocks[randomIndex];
 
-    console.log(
-      `GameController: Attempting to spawn mole in block ID: ${blockToSpawnIn.id}`
-    );
+    console.log(`Attempting to spawn mole in block ID: ${blockToSpawnIn.id}`);
     gameStateInstance.addActiveMole();
 
     const hideTimeoutId = setTimeout(() => {
-      const currentBlockState = gameStateInstance.getBlockState(
+      const currentBlockStateForTimeout = gameStateInstance.getBlockState(
         blockToSpawnIn.id
       );
-      if (currentBlockState && currentBlockState.hasMole) {
+      if (currentBlockStateForTimeout && currentBlockStateForTimeout.hasMole) {
         console.log(
           `GameController: Mole at block ${blockToSpawnIn.id} timed out. Hiding it.`
         );
         gameStateInstance.setBlockMoleState(blockToSpawnIn.id, false); // Model updated
         gameStateInstance.removeActiveMole(); // Model updated
-        view.hideMole(currentBlockState); // View updated
+        view.hideMole(currentBlockStateForTimeout); // View updated
       } else {
       }
     }, gameConfig.moleVisibleDuration);
 
     gameStateInstance.setBlockMoleState(blockToSpawnIn.id, true, hideTimeoutId);
     view.showMole(blockToSpawnIn);
-    console.log(
-      `GameController: Mole spawned at block ${blockToSpawnIn.id}. Active moles: ${gameStateInstance.activeMoles}. Auto-hide ID: ${hideTimeoutId}`
-    );
   };
 
   const updateTimer = () => {
@@ -87,15 +84,12 @@ const GameController = ((assetLoader, model, view) => {
     view.updateTimeLeft(gameStateInstance.timeLeft);
 
     if (gameStateInstance.timeLeft <= 0) {
-      console.log("Time is up! Ending game.");
       endGame();
     }
   };
 
   const startGame = () => {
-    console.log("startGame() called.");
     gameIsRunning = true;
-    console.log("gameIsRunning SET to true.");
     gameStateInstance.resetState();
 
     view.updateScore(gameStateInstance.score);
@@ -103,7 +97,6 @@ const GameController = ((assetLoader, model, view) => {
     view.resetBoardVisuals(gameStateInstance.gameBoardState);
 
     if (moleIntervalId) {
-      console.log("Clearing existing moleIntervalId:", moleIntervalId);
       clearInterval(moleIntervalId);
     }
     if (timerIntervalId) {
@@ -114,20 +107,21 @@ const GameController = ((assetLoader, model, view) => {
     moleIntervalId = setInterval(spawnMole, gameConfig.moleAppearanceRate);
     timerIntervalId = setInterval(updateTimer, 1000);
     console.log(
-      "GameController: Mole spawn interval SET:",
+      "Mole spawn interval SET:",
       moleIntervalId,
       "Rate:",
       gameConfig.moleAppearanceRate
     );
+    console.log("Game timer interval SET:", timerIntervalId);
 
     view.setBoardClickable(true);
     view.setStartButtonState(false);
-    console.log("Game started successfully.");
   };
 
   const endGame = () => {
+    console.log(gameStateInstance.score);
     gameIsRunning = false;
-    console.log("gameIsRunning SET to false.");
+    console.log("GameController: gameIsRunning SET to false.");
 
     if (moleIntervalId) {
       console.log("Clearing moleIntervalId:", moleIntervalId);
@@ -136,10 +130,13 @@ const GameController = ((assetLoader, model, view) => {
     }
 
     if (timerIntervalId) {
+      clearInterval(timerIntervalId);
+      timerIntervalId = null;
     }
 
     gameStateInstance.gameBoardState.forEach((block) => {
       if (block.hideTimeoutId) {
+        console.log(`Clearing hideTimeoutId for block ${block.id}`);
         clearTimeout(block.hideTimeoutId);
         if (block.hasMole) {
           gameStateInstance.setBlockMoleState(block.id, false);
@@ -151,8 +148,9 @@ const GameController = ((assetLoader, model, view) => {
 
     view.showAlert(`Time is Over! Your score: ${gameStateInstance.score}`);
 
+    view.setBoardClickable(false);
+
     view.setStartButtonState(true);
-    console.log("Game ended.");
   };
 
   const bootstrap = () => {
@@ -161,7 +159,6 @@ const GameController = ((assetLoader, model, view) => {
       .getGameConfig()
       .then((config) => {
         gameConfig = config;
-        console.log("Game configuration loaded:", gameConfig);
         gameStateInstance = new GameState(gameConfig);
         const initialBoardStatesFromView = view.initBoard(
           gameConfig.totalBlocks,
@@ -171,14 +168,13 @@ const GameController = ((assetLoader, model, view) => {
         gameStateInstance.gameBoardState = initialBoardStatesFromView;
 
         view.getStartButtonElement().addEventListener("click", startGame);
-        console.log("Start button event");
 
         view.setBoardClickable(false);
         view.updateScore(gameStateInstance.score);
         view.updateTimeLeft(gameStateInstance.timeLeft);
       })
       .catch((error) => {
-        console.error("Error during bootstrap", error);
+        console.error("Error during bootstrap:", error);
         view.showAlert("Error loading game configuration!");
       });
   };
@@ -188,5 +184,4 @@ const GameController = ((assetLoader, model, view) => {
   };
 })(AssetLoader, GameModel, GameView);
 
-console.log("Adding DOMContentLoaded.");
 document.addEventListener("DOMContentLoaded", GameController.bootstrap);
