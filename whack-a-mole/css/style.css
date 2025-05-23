@@ -1,0 +1,66 @@
+/* General body styling */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding-top: 20px;
+}
+
+/* Header container styling */
+.header-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.title {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.score-status {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+
+/* Timer container styling */
+.timer-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+#timeLeftDisplay {
+    font-size: 1.8em;
+}
+
+
+/* Game board container for centering */
+.game-board-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Styles for the game board grid */
+.game-board {}
+
+/* Styles for individual game blocks */
+.game-block {}
+
+.game-block.has-mole {}
+
+.game-block svg {}
