@@ -55,12 +55,38 @@ body {
     width: 100%;
 }
 
-/* Styles for the game board grid */
-.game-board {}
+.game-block img {
+    width: 75%;
+    height: 75%;
+    object-fit: contain;
+    pointer-events: none;
+    border-radius: 50%;
+}
 
-/* Styles for individual game blocks */
-.game-block {}
+.game-board {
+    display: grid;
+    grid-template-columns: 200px 200px 200px 200px;
+    gap: 20px;
+    width: 860px;
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 10px;
+}
 
-.game-block.has-mole {}
+.game-block {
+    width: 200px;
+    height: 200px;
+    border: 2px brown solid;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: background-color 0.2s ease-in-out;
+    overflow: hidden;
+}
 
-.game-block svg {}
+.game-block.has-mole {
+    background-color: brown;
+}
