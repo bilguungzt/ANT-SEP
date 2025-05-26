@@ -7,6 +7,7 @@ const GameView = (() => {
     startGameBtn: "#startGameBtn",
     gameBlockClass: "game-block",
     hasMoleClass: "has-mole",
+    hasSnakeClass: "has-snake", // New class for snake
   };
 
   const elements = {
@@ -16,7 +17,12 @@ const GameView = (() => {
     startGameBtn: document.querySelector(DOMStrings.startGameBtn),
   };
 
-  const initBoard = (totalBlocks, moleAsset, handleBlockClickCallback) => {
+  const initBoard = (
+    totalBlocks,
+    moleImgSrc,
+    snakeImgSrc,
+    handleBlockClickCallback
+  ) => {
     elements.gameBoardElement.innerHTML = "";
     const boardStatesForModel = [];
     for (let i = 0; i < totalBlocks; i++) {
@@ -28,63 +34,88 @@ const GameView = (() => {
       boardStatesForModel.push({
         id: i,
         hasMole: false,
+        hasSnake: false, // Initialize snake state
         element: blockElement,
-        moleAsset: moleAsset,
-        hideTimeoutId: null,
+        moleAsset: moleImgSrc, // Store mole image URL
+        snakeAsset: snakeImgSrc, // Store snake image URL
+        hideMoleTimeoutId: null,
       });
     }
-    console.log(
-      `Initialized board with ${totalBlocks} blocks. Mole asset: ${moleAsset}`
-    );
     return boardStatesForModel;
   };
 
   const updateScore = (score) => {
     elements.scoreDisplay.textContent = score;
-    console.log(`Displayed score: ${score}`);
   };
 
   const updateTimeLeft = (timeLeft) => {
     elements.timeLeftDisplay.textContent = timeLeft;
   };
 
+  const _createImageElement = (src, altText, fallbackText) => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = altText;
+    return img;
+  };
+
   const showMole = (blockState) => {
     if (blockState && blockState.element && blockState.moleAsset) {
       blockState.element.innerHTML = "";
-
-      const img = document.createElement("img");
-      img.src = blockState.moleAsset;
-      img.alt = "Mole";
-      blockState.element.appendChild(img);
-
-      blockState.element.classList.add(DOMStrings.hasMoleClass);
-    } else {
-      console.warn(
-        `Invalid blockState, element, or moleAsset for ID: ${
-          blockState ? blockState.id : "unknown"
-        }`
+      blockState.element.appendChild(
+        _createImageElement(blockState.moleAsset, "Mole", "Mole!")
       );
+      blockState.element.classList.add(DOMStrings.hasMoleClass);
+      blockState.element.classList.remove(DOMStrings.hasSnakeClass); // Ensure no snake class
     }
   };
 
   const hideMole = (blockState) => {
     if (blockState && blockState.element) {
-      blockState.element.innerHTML = "";
-      blockState.element.classList.remove(DOMStrings.hasMoleClass);
-      console.log(`hideMole() Mole hidden in block ID: ${blockState.id}`);
-    } else {
-      console.warn(
-        `Invalid blockState or element for ID: ${
-          blockState ? blockState.id : "unknown"
-        }`
-      );
+      // Only clear if it's currently showing a mole and not a snake
+      if (blockState.element.classList.contains(DOMStrings.hasMoleClass)) {
+        blockState.element.innerHTML = "";
+        blockState.element.classList.remove(DOMStrings.hasMoleClass);
+      }
     }
   };
 
+  const showSnake = (blockState) => {
+    if (blockState && blockState.element && blockState.snakeAsset) {
+      blockState.element.innerHTML = "";
+      blockState.element.appendChild(
+        _createImageElement(blockState.snakeAsset, "Snake", "Snake!")
+      );
+      blockState.element.classList.add(DOMStrings.hasSnakeClass);
+      blockState.element.classList.remove(DOMStrings.hasMoleClass); // Ensure no mole class
+    }
+  };
+
+  const hideSnake = (blockState) => {
+    if (blockState && blockState.element) {
+      // Only clear if it's currently showing a snake
+      if (blockState.element.classList.contains(DOMStrings.hasSnakeClass)) {
+        blockState.element.innerHTML = "";
+        blockState.element.classList.remove(DOMStrings.hasSnakeClass);
+      }
+    }
+  };
+
+  const showAllSnakes = (allBlockStates) => {
+    allBlockStates.forEach((blockState) => {
+      showSnake(blockState); // Make every block show a snake
+    });
+  };
+
   const resetBoardVisuals = (allBlockStates) => {
-    console.log("resetBoardVisuals() called.");
     allBlockStates.forEach((blockState) => {
       hideMole(blockState);
+      hideSnake(blockState); // Also hide snakes
+      blockState.element.classList.remove(
+        DOMStrings.hasMoleClass,
+        DOMStrings.hasSnakeClass
+      );
+      blockState.element.innerHTML = ""; // Ensure clear
     });
   };
 
@@ -96,13 +127,13 @@ const GameView = (() => {
     elements.startGameBtn.disabled = !enabled;
   };
 
-  function setBoardClickable(isClickable) {
+  const setBoardClickable = (isClickable) => {
     if (isClickable) {
       elements.gameBoardElement.style.pointerEvents = "auto";
     } else {
       elements.gameBoardElement.style.pointerEvents = "none";
     }
-  }
+  };
 
   return {
     initBoard,
@@ -110,6 +141,9 @@ const GameView = (() => {
     updateTimeLeft,
     showMole,
     hideMole,
+    showSnake,
+    hideSnake,
+    showAllSnakes,
     resetBoardVisuals,
     showAlert,
     setStartButtonState,

@@ -1,38 +1,27 @@
 const GameController = ((assetLoader, model, view) => {
-  console.log("GameController: Module loaded.");
   const { GameState } = model;
   let gameStateInstance;
   let gameConfig;
 
   let moleIntervalId = null;
   let timerIntervalId = null;
+  let snakeIntervalId = null; // For snake spawning
   let gameIsRunning = false;
 
   const handleBlockClick = (blockId) => {
-    if (!gameIsRunning || gameStateInstance.timeLeft <= 0) {
-      return;
-    }
+    if (!gameIsRunning || gameStateInstance.timeLeft <= 0) return;
 
     const clickedBlockState = gameStateInstance.getBlockState(blockId);
-    if (clickedBlockState && clickedBlockState.hasMole) {
-      console.log(`Mole found at block ${blockId}!`);
+    if (!clickedBlockState) return;
+
+    if (clickedBlockState.hasSnake) {
+      endGame("snake_clicked");
+    } else if (clickedBlockState.hasMole) {
       gameStateInstance.incrementScore();
-
       gameStateInstance.setBlockMoleState(blockId, false);
-
       gameStateInstance.removeActiveMole();
-
       view.updateScore(gameStateInstance.score);
       view.hideMole(clickedBlockState);
-      console.log(
-        `Mole whacked at block ${blockId}. Current Score: ${
-          gameStateInstance.score
-        }. Model thinks block ${blockId} 'hasMole': ${
-          gameStateInstance.getBlockState(blockId).hasMole
-        }`
-      );
-    } else {
-      console.log(`No mole or invalid block state at block ${blockId}.`);
     }
   };
 
@@ -42,40 +31,60 @@ const GameController = ((assetLoader, model, view) => {
       gameStateInstance.activeMoles >= gameConfig.maxMoles ||
       gameStateInstance.timeLeft <= 0
     ) {
-      if (gameStateInstance.activeMoles >= gameConfig.maxMoles)
-        console.log("Max moles reached, not spawning.");
-      return;
+      if (gameStateInstance.activeMoles >= gameConfig.maxMoles) return;
     }
 
-    const emptyBlocks = gameStateInstance.getEmptyBlocks();
+    const emptyBlocks = gameStateInstance.getEmptyBlocksForMole();
     if (emptyBlocks.length === 0) {
-      console.log("No empty blocks to spawn a mole.");
       return;
     }
 
     const randomIndex = Math.floor(Math.random() * emptyBlocks.length);
     const blockToSpawnIn = emptyBlocks[randomIndex];
 
-    console.log(`Attempting to spawn mole in block ID: ${blockToSpawnIn.id}`);
     gameStateInstance.addActiveMole();
 
-    const hideTimeoutId = setTimeout(() => {
+    const hideMoleTimeoutId = setTimeout(() => {
       const currentBlockStateForTimeout = gameStateInstance.getBlockState(
         blockToSpawnIn.id
       );
       if (currentBlockStateForTimeout && currentBlockStateForTimeout.hasMole) {
-        console.log(
-          `GameController: Mole at block ${blockToSpawnIn.id} timed out. Hiding it.`
-        );
-        gameStateInstance.setBlockMoleState(blockToSpawnIn.id, false); // Model updated
-        gameStateInstance.removeActiveMole(); // Model updated
-        view.hideMole(currentBlockStateForTimeout); // View updated
-      } else {
+        gameStateInstance.setBlockMoleState(blockToSpawnIn.id, false);
+        gameStateInstance.removeActiveMole();
+        view.hideMole(currentBlockStateForTimeout);
       }
     }, gameConfig.moleVisibleDuration);
 
-    gameStateInstance.setBlockMoleState(blockToSpawnIn.id, true, hideTimeoutId);
+    gameStateInstance.setBlockMoleState(
+      blockToSpawnIn.id,
+      true,
+      hideMoleTimeoutId
+    );
     view.showMole(blockToSpawnIn);
+  };
+
+  const spawnSnake = () => {
+    if (!gameIsRunning || gameStateInstance.timeLeft <= 0) return;
+
+    // Hide previous snake if one exists
+    if (gameStateInstance.currentSnakeBlockId !== null) {
+      const prevSnakeBlock = gameStateInstance.getBlockState(
+        gameStateInstance.currentSnakeBlockId
+      );
+      if (prevSnakeBlock) {
+        gameStateInstance.setBlockSnakeState(prevSnakeBlock.id, false);
+        view.hideSnake(prevSnakeBlock);
+      }
+    }
+
+    const randomBlockIndex = Math.floor(Math.random() * gameConfig.totalBlocks);
+    const blockToSpawnSnakeIn =
+      gameStateInstance.getBlockState(randomBlockIndex);
+
+    if (blockToSpawnSnakeIn) {
+      gameStateInstance.setBlockSnakeState(blockToSpawnSnakeIn.id, true);
+      view.showSnake(blockToSpawnSnakeIn);
+    }
   };
 
   const updateTimer = () => {
@@ -84,7 +93,7 @@ const GameController = ((assetLoader, model, view) => {
     view.updateTimeLeft(gameStateInstance.timeLeft);
 
     if (gameStateInstance.timeLeft <= 0) {
-      endGame();
+      endGame("time_up");
     }
   };
 
@@ -96,65 +105,54 @@ const GameController = ((assetLoader, model, view) => {
     view.updateTimeLeft(gameStateInstance.timeLeft);
     view.resetBoardVisuals(gameStateInstance.gameBoardState);
 
-    if (moleIntervalId) {
-      clearInterval(moleIntervalId);
-    }
-    if (timerIntervalId) {
-      console.log("Clearing existing timerIntervalId:", timerIntervalId);
-      clearInterval(timerIntervalId);
-    }
+    // Clear any existing intervals
+    if (moleIntervalId) clearInterval(moleIntervalId);
+    if (timerIntervalId) clearInterval(timerIntervalId);
+    if (snakeIntervalId) clearInterval(snakeIntervalId);
 
     moleIntervalId = setInterval(spawnMole, gameConfig.moleAppearanceRate);
     timerIntervalId = setInterval(updateTimer, 1000);
-    console.log(
-      "Mole spawn interval SET:",
-      moleIntervalId,
-      "Rate:",
-      gameConfig.moleAppearanceRate
-    );
-    console.log("Game timer interval SET:", timerIntervalId);
+    snakeIntervalId = setInterval(spawnSnake, gameConfig.snakeAppearanceRate); // Start snake spawning
 
     view.setBoardClickable(true);
     view.setStartButtonState(false);
   };
 
-  const endGame = () => {
-    console.log(gameStateInstance.score);
+  const endGame = (reason) => {
     gameIsRunning = false;
-    console.log("GameController: gameIsRunning SET to false.");
 
-    if (moleIntervalId) {
-      console.log("Clearing moleIntervalId:", moleIntervalId);
-      clearInterval(moleIntervalId);
-      moleIntervalId = null;
-    }
+    if (moleIntervalId) clearInterval(moleIntervalId);
+    if (timerIntervalId) clearInterval(timerIntervalId);
+    if (snakeIntervalId) clearInterval(snakeIntervalId); // Stop snake spawning
+    moleIntervalId = null;
+    timerIntervalId = null;
+    snakeIntervalId = null;
 
-    if (timerIntervalId) {
-      clearInterval(timerIntervalId);
-      timerIntervalId = null;
-    }
-
+    // Clear any pending mole auto-hide timeouts
     gameStateInstance.gameBoardState.forEach((block) => {
-      if (block.hideTimeoutId) {
-        console.log(`Clearing hideTimeoutId for block ${block.id}`);
-        clearTimeout(block.hideTimeoutId);
-        if (block.hasMole) {
-          gameStateInstance.setBlockMoleState(block.id, false);
-          gameStateInstance.removeActiveMole();
-          view.hideMole(block);
-        }
+      if (block.hideMoleTimeoutId) {
+        clearTimeout(block.hideMoleTimeoutId);
       }
     });
 
-    view.showAlert(`Time is Over! Your score: ${gameStateInstance.score}`);
+    let alertMessage = "";
+    if (reason === "snake_clicked") {
+      alertMessage =
+        "Game Over! You clicked a snake! Your score: " +
+        gameStateInstance.score;
+      view.showAllSnakes(gameStateInstance.gameBoardState); // Show all snakes
+    } else if (reason === "time_up") {
+      alertMessage = "Time is Over! Your score: " + gameStateInstance.score;
+    } else {
+      alertMessage = "Game Over! Your score: " + gameStateInstance.score;
+    }
+    view.showAlert(alertMessage);
 
     view.setBoardClickable(false);
-
     view.setStartButtonState(true);
   };
 
   const bootstrap = () => {
-    console.log("bootstrap() called.");
     assetLoader
       .getGameConfig()
       .then((config) => {
@@ -163,6 +161,7 @@ const GameController = ((assetLoader, model, view) => {
         const initialBoardStatesFromView = view.initBoard(
           gameConfig.totalBlocks,
           gameConfig.moleImageURL,
+          gameConfig.snakeImageURL,
           handleBlockClick
         );
         gameStateInstance.gameBoardState = initialBoardStatesFromView;
@@ -174,7 +173,7 @@ const GameController = ((assetLoader, model, view) => {
         view.updateTimeLeft(gameStateInstance.timeLeft);
       })
       .catch((error) => {
-        console.error("Error during bootstrap:", error);
+        console.error("GameController: Error during bootstrap:", error);
         view.showAlert("Error loading game configuration!");
       });
   };
